@@ -1,0 +1,9 @@
+import 'package:flutter/material.dart';
+import '../models/bible_models.dart';
+import '../services/preferences_service.dart';
+
+class SavedScreen extends StatelessWidget { const SavedScreen({super.key,required this.library,required this.prefs}); final BibleLibrary library; final PreferencesService prefs;
+ List<VerseRef> _refs(Set<String> ids){final out=<VerseRef>[];for(final b in library.books)for(final c in b.chapters)for(final v in c.verses){final r=VerseRef(b.name,c.number,v.number,v.text);if(ids.contains(r.id))out.add(r);}return out;}
+ @override Widget build(BuildContext context)=>AnimatedBuilder(animation:prefs,builder:(context,_) {final bm=_refs(prefs.bookmarks);final hi=_refs(prefs.highlights);return DefaultTabController(length:3,child:Column(children:[Padding(padding:const EdgeInsets.fromLTRB(20,18,20,10),child:Align(alignment:Alignment.centerLeft,child:Text('Saved',style:Theme.of(context).textTheme.headlineMedium?.copyWith(fontWeight:FontWeight.w900)))),const TabBar(tabs:[Tab(text:'Bookmarks'),Tab(text:'Highlights'),Tab(text:'Notes')]),Expanded(child:TabBarView(children:[_list(context,bm,'No bookmarks yet.'),_list(context,hi,'No highlights yet.'),prefs.notes.isEmpty?const Center(child:Text('No notes yet.')):ListView(padding:const EdgeInsets.fromLTRB(20,12,20,110),children:prefs.notes.entries.map((e)=>Card(child:ListTile(title:Text(e.key.replaceAll('|',' ')),subtitle:Text(e.value),trailing:IconButton(icon:const Icon(Icons.delete_outline),onPressed:()=>prefs.setNote(e.key,''))))).toList())]))]));});
+ Widget _list(BuildContext context,List<VerseRef> refs,String empty)=>refs.isEmpty?Center(child:Text(empty)):ListView.builder(padding:const EdgeInsets.fromLTRB(20,12,20,110),itemCount:refs.length,itemBuilder:(context,i){final r=refs[i];return Card(margin:const EdgeInsets.only(bottom:10),child:ListTile(title:Text(r.reference,style:const TextStyle(fontWeight:FontWeight.bold)),subtitle:Text(r.text)));});
+}
